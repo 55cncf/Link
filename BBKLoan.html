@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBK Bank - Loan Request Simulation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #003366, #0066cc);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .conversation-area {
+            padding: 30px;
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .message {
+            margin-bottom: 25px;
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .agent-message {
+            justify-content: flex-start;
+        }
+        
+        .customer-message {
+            justify-content: flex-end;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+            position: relative;
+        }
+        
+        .agent-bubble {
+            background-color: #f0f5ff;
+            border-top-left-radius: 5px;
+            color: #003366;
+            border: 1px solid #d0dfff;
+        }
+        
+        .customer-bubble {
+            background-color: #0066cc;
+            color: white;
+            border-top-right-radius: 5px;
+        }
+        
+        .message-label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .agent-label {
+            color: #003366;
+        }
+        
+        .customer-label {
+            color: #0066cc;
+            text-align: right;
+        }
+        
+        .input-area {
+            padding: 25px 30px;
+            background-color: #f9f9f9;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #003366;
+        }
+        
+        input, select, button {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(to right, #0066cc, #003366);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .option-btn {
+            background-color: #f0f5ff;
+            border: 1px solid #d0dfff;
+            color: #003366;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: calc(50% - 5px);
+        }
+        
+        .option-btn:hover {
+            background-color: #e0ebff;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .loan-offer {
+            background-color: #f0f8ff;
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        
+        .loan-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .loan-item {
+            padding: 10px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .loan-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .loan-value {
+            font-weight: bold;
+            color: #003366;
+            font-size: 16px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666;
+            border-top: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+        
+        .download-btn {
+            width: auto;
+            display: inline-block;
+            padding: 10px 25px;
+            margin-top: 20px;
+            background: linear-gradient(to right, #28a745, #218838);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            .conversation-area, .input-area {
+                padding: 20px;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+            }
+            
+            .loan-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BBK Bank - Loan Request Simulation</h1>
+            <p>Interactive simulation of a customer service conversation</p>
+        </div>
+        
+        <div class="conversation-area" id="conversation">
+            <!-- Conversation will be dynamically added here -->
+        </div>
+        
+        <div class="input-area">
+            <div id="step1" class="input-group">
+                <label class="input-label">Agent: Hello, this is BBK customer service agent. Please choose a service:</label>
+                <div class="options">
+                    <div class="option-btn" onclick="selectService(1)">1. Account Opening</div>
+                    <div class="option-btn" onclick="selectService(2)">2. Request for a Loan</div>
+                    <div class="option-btn" onclick="selectService(3)">3. Request for a Credit Card</div>
+                    <div class="option-btn" onclick="selectService(4)">4. Other Services and Inquiries</div>
+                </div>
+            </div>
+            
+            <div id="step2" class="input-group hidden">
+                <label class="input-label">Agent: Thank you for choosing loan services. As an existing customer, please provide me with your CPR number.</label>
+                <input type="text" id="cprInput" placeholder="Enter CPR number (e.g., 920306787)" maxlength="9">
+                <button onclick="submitCPR()">Submit CPR</button>
+            </div>
+            
+            <div id="step3" class="input-group hidden">
+                <label class="input-label">Agent: Hello Mr. Mahmood. Please input the OTP received on your mobile for verification.</label>
+                <input type="text" id="otpInput" placeholder="Enter OTP (e.g., 7698)" maxlength="4">
+                <button onclick="submitOTP()">Submit OTP</button>
+            </div>
+            
+            <div id="step4" class="input-group hidden">
+                <label class="input-label">Agent: Verification successful. Your current gross salary on record is BD 1200. Is this correct?</label>
+                <div class="options">
+                    <div class="option-btn" onclick="salaryCorrect('Y')">Yes (Y)</div>
+                    <div class="option-btn" onclick="salaryCorrect('N')">No (N)</div>
+                </div>
+            </div>
+            
+            <div id="step5" class="input-group hidden">
+                <label class="input-label">Agent: Please enter your current salary.</label>
+                <input type="text" id="salaryInput" placeholder="Enter salary (e.g., 1500)">
+                <button onclick="submitSalary()">Submit Salary</button>
+            </div>
+            
+            <div id="step6" class="input-group hidden">
+                <label class="input-label">Agent: Thank you. You work at Bapco. Is the employer information correct?</label>
+                <div class="options">
+                    <div class="option-btn" onclick="employerCorrect('Y')">Yes (Y)</div>
+                    <div class="option-btn" onclick="employerCorrect('N')">No (N)</div>
+                </div>
+            </div>
+            
+            <div id="step7" class="input-group hidden">
+                <label class="input-label">Agent: I can see you currently have an existing loan with BBK. Would you like to top up your loan?</label>
+                <div class="options">
+                    <div class="option-btn" onclick="topUpLoan('Yes')">Yes</div>
+                    <div class="option-btn" onclick="topUpLoan('No')">No</div>
+                </div>
+            </div>
+            
+            <div id="step8" class="input-group hidden">
+                <label class="input-label">Agent: Do you have any other loan obligations or credit cards with other banks?</label>
+                <div class="options">
+                    <div class="option-btn" onclick="otherObligations('No')">No</div>
+                    <div class="option-btn" onclick="otherObligations('Yes')">Yes</div>
+                </div>
+            </div>
+            
+            <div id="step9" class="input-group hidden">
+                <label class="input-label">Agent: How much cash in hand do you need?</label>
+                <input type="text" id="cashInput" placeholder="Enter amount (e.g., BD 15000)">
+                <button onclick="submitCash()">Submit Amount</button>
+            </div>
+            
+            <div id="step10" class="input-group hidden">
+                <label class="input-label">Agent: Please select your preferred loan tenure:</label>
+                <select id="tenureSelect">
+                    <option value="">Select tenure</option>
+                    <option value="60">60 months</option>
+                    <option value="72">72 months</option>
+                    <option value="84">84 months</option>
+                </select>
+                <button onclick="submitTenure()">Submit Selection</button>
+            </div>
+            
+            <div id="step11" class="input-group hidden">
+                <div class="loan-offer">
+                    <label class="input-label">Agent: Unfortunately, you are unable to obtain the loan on 60 months as you will exceed 50% repayment capacity. I would like to suggest you choose 84 months instead.</label>
+                    <p style="margin-top: 10px; font-weight: bold;">Loan Offer Details:</p>
+                    <div class="loan-details">
+                        <div class="loan-item">
+                            <div class="loan-label">Cash in hand</div>
+                            <div class="loan-value">BD 15,000</div>
+                        </div>
+                        <div class="loan-item">
+                            <div class="loan-label">Interest amount</div>
+                            <div class="loan-value">BD 4,500</div>
+                        </div>
+                        <div class="loan-item">
+                            <div class="loan-label">Monthly installment</div>
+                            <div class="loan-value">BD 750</div>
+                        </div>
+                        <div class="loan-item">
+                            <div class="loan-label">Financed amount</div>
+                            <div class="loan-value">BD 43,000</div>
+                        </div>
+                        <div class="loan-item">
+                            <div class="loan-label">Interest rate</div>
+                            <div class="loan-value">4.90%</div>
+                        </div>
+                        <div class="loan-item">
+                            <div class="loan-label">First payment date</div>
+                            <div class="loan-value">26/01/2026</div>
+                        </div>
+                    </div>
+                </div>
+                <label class="input-label" style="margin-top: 20px;">Would you like to proceed with this offer?</label>
+                <div class="options">
+                    <div class="option-btn" onclick="proceedOffer('Yes')">Yes</div>
+                    <div class="option-btn" onclick="proceedOffer('No')">No</div>
+                </div>
+            </div>
+            
+            <div id="step12" class="input-group hidden">
+                <h3 style="color: #003366; text-align: center; margin-bottom: 20px;">Simulation Complete!</h3>
+                <p style="text-align: center; margin-bottom: 20px;">You have completed the loan request simulation. You can restart or download the conversation transcript.</p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="restartSimulation()" style="background: linear-gradient(to right, #6c757d, #495057); width: auto;">Restart Simulation</button>
+                    <button onclick="downloadTranscript()" class="download-btn">Download Transcript</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This is a simulation for training purposes only. All personal data shown is fictional.</p>
+            <p>BBK Bank - Customer Service Training Module</p>
+        </div>
+    </div>
+
+    <script>
+        // Store conversation data
+        const conversationLog = [];
+        let currentStep = 1;
+        
+        // Initialize conversation with first message
+        window.onload = function() {
+            addMessage("agent", "Hello, this is BBK customer service agent. Please choose a service from the following list:<br>1. Account Opening<br>2. Request for a Loan<br>3. Request for a Credit Card<br>4. Other Services and Inquiries");
+        };
+        
+        // Function to add messages to conversation area
+        function addMessage(sender, text) {
+            const conversation = document.getElementById('conversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = `message-bubble ${sender}-bubble`;
+            
+            const label = document.createElement('span');
+            label.className = `message-label ${sender}-label`;
+            label.textContent = sender === 'agent' ? 'BBK Agent' : 'Customer (Mr. Mahmood)';
+            
+            bubbleDiv.appendChild(label);
+            bubbleDiv.innerHTML += text;
+            messageDiv.appendChild(bubbleDiv);
+            conversation.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            conversation.scrollTop = conversation.scrollHeight;
+            
+            // Log conversation
+            conversationLog.push({
+                sender: sender === 'agent' ? 'Agent' : 'Customer',
+                text: text.replace(/<br>/g, '\n')
+            });
+        }
+        
+        // Function to show next step and hide current
+        function nextStep(current, next) {
+            document.getElementById(`step${current}`).classList.add('hidden');
+            document.getElementById(`step${next}`).classList.remove('hidden');
+            currentStep = next;
+        }
+        
+        // Step 1: Service Selection
+        function selectService(serviceNum) {
+            const services = [
+                "Account Opening",
+                "Request for a Loan",
+                "Request for a Credit Card",
+                "Other Services and Inquiries"
+            ];
+            
+            addMessage("customer", `I would like to: ${services[serviceNum-1]} (Option ${serviceNum})`);
+            
+            if(serviceNum === 2) {
+                // Proceed with loan request
+                nextStep(1, 2);
+            } else {
+                // For other services, show message and restart
+                addMessage("agent", `Thank you for selecting "${services[serviceNum-1]}". This simulation focuses on loan requests only. Please select "Request for a Loan" to continue.`);
+                setTimeout(() => {
+                    document.getElementById(`step1`).classList.remove('hidden');
+                    document.querySelectorAll('.input-group:not(#step1)').forEach(el => {
+                        el.classList.add('hidden');
+                    });
+                }, 1500);
+            }
+        }
+        
+        // Step 2: CPR Input
+        function submitCPR() {
+            const cprInput = document.getElementById('cprInput');
+            const cpr = cprInput.value.trim();
+            
+            if(cpr === '' || cpr.length !== 9) {
+                alert('Please enter a valid 9-digit CPR number');
+                return;
+            }
+            
+            addMessage("customer", cpr);
+            addMessage("agent", `Hello Mr. Mahmood. Please input the OTP received on your mobile for verification.`);
+            nextStep(2, 3);
+        }
+        
+        // Step 3: OTP Input
+        function submitOTP() {
+            const otpInput = document.getElementById('otpInput');
+            const otp = otpInput.value.trim();
+            
+            if(otp === '' || otp.length !== 4) {
+                alert('Please enter a valid 4-digit OTP');
+                return;
+            }
+            
+            addMessage("customer", otp);
+            addMessage("agent", `Verification successful. Your current gross salary on record is <span class="highlight">BD 1200</span>. Is this correct? (Y/N)`);
+            nextStep(3, 4);
+        }
+        
+        // Step 4: Salary Verification
+        function salaryCorrect(answer) {
+            addMessage("customer", answer === 'Y' ? 'Yes' : 'No');
+            
+            if(answer === 'Y') {
+                addMessage("agent", `Thank you for confirming. You work at Bapco. Is the employer information correct? (Y/N)`);
+                nextStep(4, 6);
+            } else {
+                addMessage("agent", `Please enter your current salary.`);
+                nextStep(4, 5);
+            }
+        }
+        
+        // Step 5: New Salary Input
+        function submitSalary() {
+            const salaryInput = document.getElementById('salaryInput');
+            const salary = salaryInput.value.trim();
+            
+            if(salary === '' || isNaN(salary)) {
+                alert('Please enter a valid salary amount');
+                return;
+            }
+            
+            addMessage("customer", salary);
+            addMessage("agent", `Thank you. You work at Bapco. Is the employer information correct? (Y/N)`);
+            nextStep(5, 6);
+        }
+        
+        // Step 6: Employer Verification
+        function employerCorrect(answer) {
+            addMessage("customer", answer === 'Y' ? 'Yes' : 'No');
+            addMessage("agent", `I can see you currently have an existing loan with BBK. Would you like to top up your loan? (Yes/No)`);
+            nextStep(6, 7);
+        }
+        
+        // Step 7: Top Up Loan
+        function topUpLoan(answer) {
+            addMessage("customer", answer);
+            addMessage("agent", `Do you have any other loan obligations or credit cards with other banks?`);
+            nextStep(7, 8);
+        }
+        
+        // Step 8: Other Obligations
+        function otherObligations(answer) {
+            addMessage("customer", answer);
+            addMessage("agent", `How much cash in hand do you need?`);
+            nextStep(8, 9);
+        }
+        
+        // Step 9: Cash Amount
+        function submitCash() {
+            const cashInput = document.getElementById('cashInput');
+            const cash = cashInput.value.trim();
+            
+            if(cash === '' || isNaN(cash.replace('BD ', '').replace(',', ''))) {
+                alert('Please enter a valid cash amount');
+                return;
+            }
+            
+            addMessage("customer", cash.includes('BD') ? cash : `BD ${cash}`);
+            addMessage("agent", `Please select your preferred loan tenure from the following options:<br>- 60 months<br>- 72 months<br>- 84 months`);
+            nextStep(9, 10);
+        }
+        
+        // Step 10: Tenure Selection
+        function submitTenure() {
+            const tenureSelect = document.getElementById('tenureSelect');
+            const tenure = tenureSelect.value;
+            
+            if(tenure === '') {
+                alert('Please select a loan tenure');
+                return;
+            }
+            
+            const tenureText = tenure + ' months';
+            addMessage("customer", tenureText);
+            nextStep(10, 11);
+        }
+        
+        // Step 11: Proceed with Offer
+        function proceedOffer(answer) {
+            addMessage("customer", answer);
+            
+            if(answer === 'Yes') {
+                addMessage("agent", `Thank you for accepting the loan offer. Your application has been submitted for processing. A confirmation will be sent to your registered email and mobile.`);
+            } else {
+                addMessage("agent", `Thank you for your interest. The loan offer will remain available for 7 days. Please contact us if you change your mind or have any questions.`);
+            }
+            
+            nextStep(11, 12);
+        }
+        
+        // Step 12: Restart Simulation
+        function restartSimulation() {
+            // Clear conversation
+            document.getElementById('conversation').innerHTML = '';
+            
+            // Reset all inputs
+            document.getElementById('cprInput').value = '';
+            document.getElementById('otpInput').value = '';
+            document.getElementById('salaryInput').value = '';
+            document.getElementById('cashInput').value = '';
+            document.getElementById('tenureSelect').value = '';
+            
+            // Hide all steps except first
+            document.querySelectorAll('.input-group').forEach(el => {
+                el.classList.add('hidden');
+            });
+            document.getElementById('step1').classList.remove('hidden');
+            
+            // Reset conversation log
+            conversationLog.length = 0;
+            currentStep = 1;
+            
+            // Add initial message
+            addMessage("agent", "Hello, this is BBK customer service agent. Please choose a service from the following list:<br>1. Account Opening<br>2. Request for a Loan<br>3. Request for a Credit Card<br>4. Other Services and Inquiries");
+        }
+        
+        // Download transcript
+        function downloadTranscript() {
+            let transcript = "BBK BANK - LOAN REQUEST SIMULATION TRANSCRIPT\n";
+            transcript += "=============================================\n\n";
+            transcript += "Date: " + new Date().toLocaleString() + "\n\n";
+            
+            conversationLog.forEach(entry => {
+                transcript += `${entry.sender}: ${entry.text}\n\n`;
+            });
+            
+            transcript += "\n--- END OF TRANSCRIPT ---\n";
+            transcript += "Note: This is a simulation for training purposes only.\n";
+            transcript += "All personal data shown is fictional.\n";
+            
+            const blob = new Blob([transcript], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BBK_Loan_Simulation_Transcript.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
